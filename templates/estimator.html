@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html ng-app="MyApp">
+	<head>
+		<title>Cost Estimator</title>
+		<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.css')}}">
+		<script src="{{ url_for('static', filename='jquery-1.9.1.min.js')}}"></script>
+		<script src="{{ url_for('static', filename='angular.min.js')}}"></script>
+		<script src="{{ url_for('static', filename='bootstrap.min.js')}}"></script>
+		
+		<script src="{{ url_for('static', filename='estimator.js') }}"></script>
+
+		<!-- dropzone -->
+		<link rel="stylesheet" href="{{ url_for('static', filename='dropzone.min.css') }}"/>
+		<link rel="stylesheet" href="{{ url_for('static', filename='basic.min.css') }}"/>
+		<script type="application/javascript" src="{{ url_for('static', filename='dropzone.min.js') }}"></script>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<style type="text/css">
+			.userinput{
+				background-color: aquamarine;
+			}
+		</style>
+	</head>
+
+	<body ng-controller="SearchController">
+		<div class="container" style="width:90%">
+			<h3 style="text-align: center;">Cost Estimator</h3>
+			<div class="row text-center">
+				<strong>Volume</strong> = Length <input type="number" step="0.01" min="0.01" ng-init="settings.l={{height}}" ng-model="settings.l" />m X 
+				Width <input type="number" step="0.01" min="0.01" ng-model="settings.w" ng-init="settings.w={{width}}" />m X 
+				Depth <input type="number" step="0.01" min="0.01" class="userinput" ng-model="settings.d" />m =  <strong>[[ volume()  | number : 2 ]]m<sup>3</sup></strong>
+			</div>
+			<br>
+			<div class="row text-center">
+				<strong>Material Grade: </strong> 
+				<select ng-model="selectedGrade" class="userinput" style="min-width:100px">
+					<option ng-repeat="g in grades">[[ g ]]</option>
+				</select>
+			</div>
+			<br>
+			<div class="row text-center">
+				<strong>Month: </strong>
+				<input type="month" name="input" class="userinput" ng-model="selectedMonth" placeholder="yyyy-MM" required />
+			</div>
+			<br>
+			<div class="row text-center">
+				<button ng-if="volume() > 0 && selectedMonth" class="btn btn-success btn-lg" ng-click="getValues(selectedMonth,selectedGrade,volume())">Analyze</button>
+			</div>
+			<div class="row">
+				<div class="col-lg-4">
+					<div class="row">
+						<div class="form-group">
+							<label class="control-label">Material Cost</label>
+							<div class="input-group">
+							  <input type="number" class="form-control" ng-model="result.material">
+							  <span class="input-group-addon">LKR</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="control-label">Other Costs</label>
+							<div class="input-group">
+							  <input type="number" class="form-control" ng-model="result.other">
+							  <span class="input-group-addon">LKR</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-8">
+					<div class="form-group">
+						<label class="control-label">Required Man Days</label>
+						<div class="input-group">
+						  <input type="number" class="form-control" ng-model="result.days">
+						  <span class="input-group-addon">Days</span>
+						</div>
+					</div>
+					<div class="form-group" ng-if="selectedWorkers().length != 0">
+						<label class="control-label">Estimated Man Days With Selected Employees</label>
+						<div class="input-group">
+						  <input type="number" class="form-control" value="[[ selectedManDays() ]]">
+						  <span class="input-group-addon">Days</span>
+						</div>
+					</div>
+					<div class="alert alert-danger" ng-if="selectedWorkers().length == 0">
+						Please add workers
+					</div>
+					<table class="table table-striped table-hover">
+						<thead>
+							<tr>
+								<th>Worker Type</th>
+								<th>Daily Rate</th>
+								<th>Count</th>
+								<th>Daily Cost</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="worker in workers track by $index">
+								<td>[[ worker.name ]]</td>
+								<td>[[ worker.rate | number : 2 ]]</td>
+								<td>
+									<button ng-disabled="worker.count==0" ng-click="worker.count=worker.count-1" class="btn btn-success">-</button>
+									&nbsp;
+									[[ worker.count ]]
+									&nbsp;
+									<button ng-click="worker.count=worker.count+1" class="btn btn-success">+</button>
+								</td>
+								<td>[[ worker.rate * worker.count | number : 2 ]]</td>
+							</tr>
+							<tr>
+								<td colspan="3" class="text-right">
+									<strong>
+										Total Worker Cost for [[ selectedManDays() ]] days
+									</strong>
+									</td>
+								<td>
+									<strong>[[ workerCost() | number: 2 ]] LKR</strong>
+								</td>
+							</tr>
+						</tbody>
+					</table> 
+				</div>
+			</div>
+			<div class="row text-center">
+				<h1>Total Cost: [[ totalCost() | number : 2 ]] LKR</h1>
+			</div>
+		</div>
+	</body>
+</html>

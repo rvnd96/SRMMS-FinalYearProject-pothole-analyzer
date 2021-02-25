@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html ng-app="MyApp">
+	<head>
+		<title>Pothole Analyzer</title>
+		<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.css')}}">
+		<script src="{{ url_for('static', filename='jquery-1.9.1.min.js')}}"></script>
+		<script src="{{ url_for('static', filename='angular.min.js')}}"></script>
+		<script src="{{ url_for('static', filename='bootstrap.min.js')}}"></script>
+		
+		<script src="{{ url_for('static', filename='main.js') }}"></script>
+
+		<!-- dropzone -->
+		<link rel="stylesheet" href="{{ url_for('static', filename='dropzone.min.css') }}"/>
+		<link rel="stylesheet" href="{{ url_for('static', filename='basic.min.css') }}"/>
+		<script type="application/javascript" src="{{ url_for('static', filename='dropzone.min.js') }}"></script>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<style type="text/css">
+			
+		</style>
+	</head>
+
+	<body ng-controller="SearchController">
+		<div class="container" style="width:90%">
+			<h3 style="text-align: center;">Pothole Analyzer</h3>
+			<div class="row">
+				<h3>Upload New Videos</h3>
+				<form method="POST" action='/upload' class="dropzone dz-clickable" 
+					id="dropper" enctype="multipart/form-data">
+					<div class="dz-message" data-dz-message><span>Drop mp4 video files here to upload (Max 1GB)</span></div>
+				</form>
+				* refresh page after a new upload for videos to appear in the selection drop down
+
+				<script type="application/javascript">
+					Dropzone.options.dropper = {
+						paramName: 'file',
+						chunking: true,
+						forceChunking: true,
+						url: '/upload',
+						maxFilesize: 1025, // megabytes
+						chunkSize: 1000000 // bytes
+					}
+				</script>
+			</div>
+			<div class="row">
+				<h3>Analyze</h3>
+				
+				<div class="col-lg-4">
+					<div class="row">
+						<div class="col-lg-8">
+							Select a video file
+							<select ng-model="selectedVideo" class="form-control">
+								<option ng-repeat="v in videos">[[ v ]]</option>
+							</select>
+						</div>
+						<div class="col-lg-4">
+							<button ng-if="videos.length" class="btn btn-primary" ng-click="loadVideo()">Load</button>
+						</div>
+					</div>
+					<br />
+					Camera Range (meters). <br />From
+					<input type="number" min="0" ng-model="settings.dMin" /> to 
+					<input type="number" min="[[ settings.dMax ]]" ng-model="settings.dMax" />
+					<br />Degree of View. 
+					<input type="number" min="1" max="179" ng-model="settings.degreeOfView" /> Degrees
+					<br />
+					<video id="player" width="100%" height="auto" controls>
+						<source src="[[ getSelectedVideo() | trustUrl ]]" type="video/mp4">
+						Your browser does not support mp4.
+					</video>
+					<div class="row">
+						<button ng-click="detect()" ng-disabled="isDetecting" style="width:100%" class="btn btn-success btn-lg">Detect Potholes in Current Frame</button>
+					</div>
+
+					<div style="margin-top:30px" class="row progress progress-striped active" ng-if="isDetecting">
+						<div class="progress-bar" style="width: 100%;"></div>
+					</div>
+					<div ng-if="!isDetecting && result.HasError" style="margin-top:15px" class="row alert alert-danger">
+						[[ result.ErrorMessage ]]
+					</div>
+					<div ng-if="!isDetecting && result.Results && result.Results.length == 0" style="margin-top:15px" class="row alert alert-danger">
+						No Results
+					</div>
+				</div>
+				<div class="col-lg-8">
+					<div class="row">
+						<img src="" style="width: 100%;" id="image" usemap="#map-mask">
+					</div>
+					<table class="table table-striped table-hover">
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Accuracy</th>
+								<th>Width (Px)</th>
+								<th>Length (Px)</th>
+								<th>Area (Px^2)</th>
+								<th>Width (m)</th>
+								<th>Length (m)</th>
+								<th>Area (m^2)</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							[[ result.class_ids | json ]] [[ result | json ]]
+							<tr ng-repeat="roi in result.rois track by $index">
+								<td>[[ $index + 1 ]]</td>
+								<td>[[ result.scores[$index] | number : 2 ]]%</td>
+								<td>[[ width(roi) ]]</td>
+								<td>[[ height(roi) ]]</td>
+								<td>[[ area(roi) ]]</td>
+								<td>[[ real(roi).width | number : 2 ]]</td>
+								<td>[[ real(roi).height | number : 2 ]]</td>
+								<td>[[ real(roi).area | number : 2 ]]</td>
+								<td>
+									<button ng-click="calculator(real(roi))" class="btn btn-success ">Cost Estimator</button>
+								</td>
+							</tr>
+						</tbody>
+					</table> 
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

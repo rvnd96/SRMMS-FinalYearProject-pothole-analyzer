@@ -1,0 +1,27 @@
+[
+    {
+        "id": 1,
+        "count": 0,
+        "name":"Labour Skilled A (SK 'A')",
+        "rate": 2400,
+        "ratio": 1.4
+    },{
+        "id": 2,
+        "count": 0,
+        "name":"Labour Skilled B (SK 'B')",
+        "rate": 2100,
+        "ratio": 1.3
+    },{
+        "id": 3,
+        "count": 0,
+        "name":"Labour Semi Skilled (S/SK)",
+        "rate": 2100,
+        "ratio": 1.2
+    },{
+        "id": 4,
+        "count": 0,
+        "name":"Labour Unskilled (U/SK)",
+        "rate": 1900,
+        "ratio": 1
+    }
+]
